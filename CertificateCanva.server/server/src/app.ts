@@ -19,5 +19,11 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/images", imageRoutes);
 app.use("/api/canvas", canvaRoutes);
 app.use("/api", verificationRoutes);
+app.get("/", (req, res) => {
+  res.json({
+    status: "OK",
+    message: "Server is running ",
+  });
+});
 
 export default app;
