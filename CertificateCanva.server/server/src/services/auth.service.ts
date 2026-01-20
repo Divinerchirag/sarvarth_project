@@ -20,9 +20,10 @@ export const login = async (data: any) => {
   const valid = await comparePassword(password, user.password_hash);
   if (!valid) throw new Error("Invalid credentials");
 
+  // ✅ ACCESS TOKEN
   const accessToken = jwt.sign(
     { id: user.id, role: user.role_name },
-    process.env.JWT_SECRET!,
+    process.env.JWT_ACCESS_SECRET!,   
     { expiresIn: "15m" }
   );
 
@@ -43,14 +44,15 @@ export const refresh = async (token: string) => {
   const stored = await findRefreshToken(token);
   if (!stored) throw new Error("Forbidden");
 
-  const decoded: any = jwt.verify(
+
+  const decoded = jwt.verify(
     token,
     process.env.JWT_REFRESH_SECRET!
-  );
+  ) as any;
 
   return jwt.sign(
     { id: decoded.id },
-    process.env.JWT_SECRET!,
+    process.env.JWT_ACCESS_SECRET!,  
     { expiresIn: "15m" }
   );
 };

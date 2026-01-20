@@ -1,40 +1,62 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteUser = exports.updateUser = exports.getUser = exports.getUsers = exports.createUser = void 0;
-const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const db_1 = require("../config/db");
+const adminService = __importStar(require("../services/admin.service"));
 const createUser = async (req, res) => {
-    const { email, password, role } = req.body;
-    const hash = await bcryptjs_1.default.hash(password, 10);
-    const user = await db_1.pool.query("INSERT INTO users (email,password,role) VALUES ($1,$2,$3) RETURNING *", [email, hash, role]);
-    res.json(user.rows[0]);
+    const user = await adminService.createUser(req.body);
+    res.status(201).json(user);
 };
 exports.createUser = createUser;
 const getUsers = async (_, res) => {
-    const users = await db_1.pool.query("SELECT id,email,role FROM users");
-    res.json(users.rows);
+    const users = await adminService.getUsers();
+    res.json(users);
 };
 exports.getUsers = getUsers;
 const getUser = async (req, res) => {
-    const user = await db_1.pool.query("SELECT id,email,role FROM users WHERE id=$1", [
-        req.params.id,
-    ]);
-    res.json(user.rows[0]);
+    const user = await adminService.getUserById(req.params.id);
+    res.json(user);
 };
 exports.getUser = getUser;
 const updateUser = async (req, res) => {
-    await db_1.pool.query("UPDATE users SET role=$1 WHERE id=$2", [
-        req.body.role,
-        req.params.id,
-    ]);
-    res.json({ message: "Updated" });
+    const user = await adminService.updateUser(req.params.id, req.body);
+    res.json(user);
 };
 exports.updateUser = updateUser;
 const deleteUser = async (req, res) => {
-    await db_1.pool.query("DELETE FROM users WHERE id=$1", [req.params.id]);
-    res.json({ message: "Deleted" });
+    await adminService.deleteUser(req.params.id);
+    res.status(204).send();
 };
 exports.deleteUser = deleteUser;

@@ -1,14 +1,44 @@
+import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { jwtConfig } from "../config/jwt";
 
-export const authMiddleware = (req: any, res: any, next: any) => {
-  const authHeader = req.headers.authorization;
 
-  if (!authHeader) return res.sendStatus(401);
 
-  const token = authHeader.split(" ")[1];
-  if (!token) return res.sendStatus(401);
+export interface AuthRequest extends Request {
+  user?: {
+    id: string;
+    role: string;
+  };
+}
 
-  const decoded = jwt.verify(token, process.env.JWT_SECRET!);
-  req.user = decoded;
-  next();
+export const authMiddleware = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const token =
+      req.cookies?.accessToken ||
+      req.headers.authorization?.split(" ")[1];
+
+
+
+    if (!token) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const decoded = jwt.verify(
+      token,
+      jwtConfig.accessToken.secret
+    ) as any;
+
+    req.user = {
+      id: decoded.id,
+      role: decoded.role,
+    };
+
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid token" });
+  }
 };

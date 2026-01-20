@@ -7,7 +7,13 @@ export const login = async (req: Request, res: Response) => {
 };
 
 export const refresh = async (req: Request, res: Response) => {
-  const accessToken = await authService.refresh(req.body.token);
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(400).json({ message: "Refresh token required" });
+  }
+
+  const accessToken = await authService.refresh(refreshToken);
   res.json({ accessToken });
 };
 
